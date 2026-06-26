@@ -1,0 +1,26 @@
+[project]
+name = "mnist"
+version = "0.1.0"
+description = "MNIST classifier with multiple model architectures (MLP, CNN, ViT)"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "numpy>=2.5.0",
+    "torch>=2.12.1",
+    "torchvision>=0.27.1",
+    "tqdm>=4.67.0",
+    "matplotlib>=3.10.1",
+    "fpdf2>=2.8.2",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+norecursedirs = [".venv"]
+
+[project.scripts]
+mnist = "main:main"

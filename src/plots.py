@@ -20,8 +20,8 @@ from pathlib import Path
 def plot_loss(history: dict, save_path: str | Path) -> None:
     plt.figure(figsize=(8, 5))
     epochs = range(1, len(history["train_loss"]) + 1)
-    plt.plot(epochs, history["train_loss"], "b-", label="Training Loss")
-    plt.plot(epochs, history["val_loss"], "r-", label="Validation Loss")
+    plt.plot(epochs, history["train_loss"], "bo-", label="Training Loss")
+    plt.plot(epochs, history["val_loss"], "ro-", label="Validation Loss")
     plt.xlabel("Epoch")
     plt.ylabel("Loss")
     plt.title("Loss over Epochs")
@@ -35,7 +35,7 @@ def plot_loss(history: dict, save_path: str | Path) -> None:
 def plot_accuracy(history: dict, save_path: str | Path) -> None:
     plt.figure(figsize=(8, 5))
     epochs = range(1, len(history["val_acc"]) + 1)
-    plt.plot(epochs, history["val_acc"], "g-", label="Validation Accuracy")
+    plt.plot(epochs, history["val_acc"], "go-", label="Validation Accuracy")
     plt.xlabel("Epoch")
     plt.ylabel("Accuracy (%)")
     plt.title("Validation Accuracy over Epochs")

@@ -30,6 +30,7 @@ Key concepts explained:
   This helps the model converge more precisely later in training.
 """
 
+import time
 import torch
 import torch.nn as nn
 from torch.optim import Optimizer
@@ -155,9 +156,11 @@ def train(
 
     Returns:
         Dictionary containing training history:
-            history["train_loss"]: loss after each epoch.
-            history["val_loss"]:   validation loss after each epoch.
-            history["val_acc"]:    validation accuracy (%) after each epoch.
+            history["train_loss"]:   loss after each epoch.
+            history["val_loss"]:     validation loss after each epoch.
+            history["val_acc"]:      validation accuracy (%) after each epoch.
+            history["epoch_times"]:  duration of each epoch in seconds.
+            history["total_time"]:   total training time in seconds.
     """
     device = get_device()
     model.to(device)
@@ -168,19 +171,23 @@ def train(
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.5)
 
     best_acc = 0.0
-    history = {"train_loss": [], "val_loss": [], "val_acc": []}
+    history = {"train_loss": [], "val_loss": [], "val_acc": [], "epoch_times": []}
 
+    t_start = time.time()
     for epoch in range(1, epochs + 1):
+        t0 = time.time()
         print(f"\nEpoch [{epoch}/{epochs}]")
         train_loss = train_epoch(model, train_loader, optimizer, criterion, device)
         val_loss, val_acc = validate(model, test_loader, criterion, device)
         scheduler.step()
+        dt = time.time() - t0
 
         history["train_loss"].append(train_loss)
         history["val_loss"].append(val_loss)
         history["val_acc"].append(val_acc)
+        history["epoch_times"].append(dt)
 
-        print(f"  Train Loss: {train_loss:.4f}  Val Loss: {val_loss:.4f}  Val Acc: {val_acc:.2f}%")
+        print(f"  Train Loss: {train_loss:.4f}  Val Loss: {val_loss:.4f}  Val Acc: {val_acc:.2f}%  Time: {dt:.1f}s")
 
         if val_acc > best_acc:
             best_acc = val_acc
@@ -190,5 +197,7 @@ def train(
         current_lr = optimizer.param_groups[0]["lr"]
         print(f"  LR: {current_lr:.6f}")
 
+    history["total_time"] = time.time() - t_start
     print(f"\nTraining complete. Best accuracy: {best_acc:.2f}%")
+    print(f"Total time: {history['total_time']:.1f}s")
     return history

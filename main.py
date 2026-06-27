@@ -29,16 +29,18 @@ Usage:
 
 import argparse
 import json
+import platform
 from datetime import datetime
 from pathlib import Path
 
 import numpy as np
+import torch
 
 from src.dataset import get_mnist_loaders
 from src.model import build_model
 from src.train import train
 from src.evaluate import evaluate
-from src.utils import set_seed
+from src.utils import set_seed, get_device
 from src.plots import (
     plot_loss,
     plot_accuracy,
@@ -139,6 +141,34 @@ def main() -> None:
         plot_loss(history, run_dir / "loss.png")
         plot_accuracy(history, run_dir / "accuracy.png")
         print(f"Plots saved: loss.png, accuracy.png")
+
+        # Save training stats (metrics table + timing + hardware).
+        device = get_device()
+        gpu_name = torch.cuda.get_device_name(0) if device.type == "cuda" else "N/A"
+        epochs_list = []
+        for i in range(len(history["train_loss"])):
+            epochs_list.append({
+                "epoch": i + 1,
+                "train_loss": round(history["train_loss"][i], 4),
+                "val_loss": round(history["val_loss"][i], 4),
+                "val_acc": round(history["val_acc"][i], 2),
+                "time_seconds": round(history["epoch_times"][i], 1),
+            })
+
+        stats = {
+            "hardware": {
+                "device": str(device),
+                "gpu": gpu_name,
+                "cpu": platform.processor() or "unknown",
+            },
+            "timing": {
+                "total_seconds": round(history["total_time"], 1),
+                "avg_per_epoch": round(history["total_time"] / len(history["epoch_times"]), 1),
+            },
+            "epochs": epochs_list,
+        }
+        with open(run_dir / "training_stats.json", "w") as f:
+            json.dump(stats, f, indent=2)
 
     if args.mode in ("eval", "train-eval"):
         print(f"\n{'='*50}")
